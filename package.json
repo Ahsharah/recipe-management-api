@@ -5,12 +5,13 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
+    "seed": "node src/seeds/sampleData.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "My awesome recipe management API!",
   "dependencies": {
     "dotenv": "^16.4.5",
     "express": "^4.21.1",

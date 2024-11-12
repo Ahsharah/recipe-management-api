@@ -1,108 +1,121 @@
-// 🌟 Welcome to my Recipe Management API! Here's where the magic happens! 
-
-// 📚 Getting all our essential tools
+// 🌟 Welcome to my Recipe Management API - Where Code Meets Cooking! 
 const express = require('express');
 const mongoose = require('mongoose');
 require('dotenv').config();
 
-// 🛠️ Setting up our express app (it's like preheating the oven!)
+// 🛠️ Getting our kitchen tools ready (setting up express)
 const app = express();
 
-// 🔄 Bringing in all our recipe-related routes
+// 📚 Organizing our recipe collections (routes)
 const recipeRoutes = require('./routes/recipes');
 const categoryRoutes = require('./routes/categories');
 const reviewRoutes = require('./routes/reviews');
 
-// 🎯 Middleware to help us handle JSON data
+// 🔨 Setting up our kitchen tools (middleware)
 app.use(express.json());
 
-// ⚡ Handling potential JSON parsing errors
+// 🛡️ Safety first! Handling JSON parsing errors
 app.use((err, req, res, next) => {
     if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
         return res.status(400).json({ 
-            message: "Oops! That's not valid JSON. Double-check your request!" 
+            message: "Whoops! That's not valid JSON. Check your ingredients and try again!" 
         });
     }
     next();
 });
 
-// 🚀 Setting up our main routes
+// 🗺️ Setting up our recipe routes - where to find everything
 app.use('/api/recipes', recipeRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/reviews', reviewRoutes);
 
-// 👋 Welcome route - say hello!
+// 👋 Welcome message - the front door to our API kitchen!
 app.get('/', (req, res) => {
     res.json({ 
-        message: 'Welcome to my Recipe Management API!',
-        endpoints: {
+        message: 'Welcome to My Recipe Management API!',
+        creator: 'Made with ❤️ by Alexandria',
+        availableEndpoints: {
             recipes: '/api/recipes',
             categories: '/api/categories',
             reviews: '/api/reviews'
         },
-        status: '🟢 All systems go!'
+        status: '🟢 Kitchen is Open!'
     });
 });
 
-// 🔌 MongoDB connection with better error handling
-mongoose.connect(process.env.MONGODB_URI)
-    .then(() => {
-        console.log('🎉 Successfully connected to MongoDB!');
-    })
-    .catch((err) => {
-        console.error('😢 MongoDB connection error:', err);
-        process.exit(1); // Exit if we can't connect to database
-    });
+// 🔌 Connecting to our database (like plugging in our appliances)
+const connectDB = async () => {
+    try {
+        await mongoose.connect(process.env.MONGODB_URI);
+        console.log('🎉 Yes! Connected to MongoDB!');
+    } catch (err) {
+        console.error('😢 Database connection failed:', err.message);
+        process.exit(1);
+    }
+};
 
-// 📡 Handle MongoDB connection events
+// 📡 Keeping an eye on our database connection
 mongoose.connection.on('error', err => {
-    console.error('🔴 MongoDB connection error:', err);
+    console.error('🔴 Database error:', err);
 });
 
 mongoose.connection.on('disconnected', () => {
-    console.log('🟡 MongoDB disconnected - checking connection...');
+    console.log('🟡 Lost database connection - trying to reconnect...');
 });
 
 mongoose.connection.on('reconnected', () => {
-    console.log('🟢 MongoDB reconnected!');
+    console.log('🟢 Back online! Database reconnected');
 });
 
-// 🚦 Starting our server
-const PORT = process.env.PORT || 3000;
-const server = app.listen(PORT, () => {
-    console.log(`🚀 Server is up and running on port ${PORT}!`);
-    console.log(`📝 API Documentation available at http://localhost:${PORT}`);
-});
+// 🚀 Starting our server (opening the kitchen)
+const startServer = async () => {
+    try {
+        await connectDB();
+        
+        const PORT = process.env.PORT || 3000;
+        app.listen(PORT, () => {
+            console.log(`
+🍳 = = = = = = = = = = = = = = = = = = = = = =
+🚀 Server is sizzling on port ${PORT}!
+📖 API Documentation: http://localhost:${PORT}
+👩‍🍳 Ready to cook up some amazing recipes!
+= = = = = = = = = = = = = = = = = = = = = = =`);
+        });
+    } catch (error) {
+        console.error('💥 Server startup failed:', error);
+        process.exit(1);
+    }
+};
 
-// 🛡️ Global error handling middleware
+// 🛡️ Global error handling - catching any kitchen mishaps
 app.use((err, req, res, next) => {
-    console.error('🔴 Error:', err.stack);
+    console.error('🔴 Oops! Error:', err.stack);
     
     // Handle different types of errors
     if (err.name === 'ValidationError') {
         return res.status(400).json({ 
-            message: 'Validation Error',
+            message: 'Recipe validation failed!',
             details: Object.values(err.errors).map(error => error.message)
         });
     }
     
     if (err.name === 'CastError') {
         return res.status(400).json({ 
-            message: 'Invalid ID format. Please check your request.'
+            message: 'Hmm... that ID doesn\'t look right. Double-check it!'
         });
     }
 
-    // Generic error response
     res.status(err.status || 500).json({ 
-        message: err.message || 'Oops! Something went wrong on our end!',
+        message: err.message || 'Oops! Something went wrong in the kitchen!',
         status: 'error'
     });
 });
 
-// 🚫 404 handler - for routes that don't exist
+// 🚫 404 handler - when someone tries a route that doesn't exist
 app.use((req, res) => {
     res.status(404).json({ 
-        message: 'Hmm... This route doesn\'t exist! Check the URL and try again.',
+        message: 'Oops! This isn\'t a recipe we know about!',
+        tip: 'Check the URL and try again',
         availableRoutes: {
             recipes: '/api/recipes',
             categories: '/api/categories',
@@ -111,33 +124,33 @@ app.use((req, res) => {
     });
 });
 
-// 🔄 Graceful shutdown handling
-process.on('SIGTERM', gracefulShutdown);
-process.on('SIGINT', gracefulShutdown);
-
-async function gracefulShutdown() {
-    console.log('🔄 Received shutdown signal. Cleaning up...');
+// 🔄 Graceful shutdown - cleaning up the kitchen before we close
+async function gracefulShutdown(signal) {
+    console.log(`\n${signal} received. Cleaning up the kitchen...`);
     try {
         await mongoose.connection.close();
-        console.log('📡 MongoDB connection closed.');
-        server.close(() => {
-            console.log('🚪 Server closed. Goodbye!');
-            process.exit(0);
-        });
+        console.log('📦 Database connection closed safely.');
+        process.exit(0);
     } catch (err) {
-        console.error('💥 Error during shutdown:', err);
+        console.error('💥 Error during cleanup:', err);
         process.exit(1);
     }
 }
 
-// ⚠️ Unhandled promise rejection handler
+// 🛑 Handling different ways our server might need to shut down
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
+// ⚠️ Catching any unhandled problems
 process.on('unhandledRejection', (reason, promise) => {
-    console.error('🔴 Unhandled Promise Rejection:', reason);
-    // Don't exit the process, but log it
+    console.error('🚨 Unhandled Promise Rejection:', reason);
+    // Log it but don't crash the server
 });
 
-// 💥 Uncaught exception handler
 process.on('uncaughtException', (error) => {
     console.error('💥 Uncaught Exception:', error);
-    gracefulShutdown();
+    gracefulShutdown('UNCAUGHT EXCEPTION');
 });
+
+// 🎬 Action! Start the server
+startServer();

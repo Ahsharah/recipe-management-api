@@ -15,7 +15,7 @@ A deliciously crafted API for managing recipes, categories, and reviews! Built w
 ### Prerequisites
 - Node.js
 - MongoDB
-- Your favorite API testing tool (we recommend using curl commands because they're cool!)
+- Your favorite API testing tool (recommend using curl commands because they're cool!)
 
 ### Installation
 1. Clone this tasty repo:
